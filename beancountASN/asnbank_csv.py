@@ -66,12 +66,10 @@ class ASNImporter(importer.ImporterProtocol):
                 if re.match("^'.*'$", narration):
                     narration = narration[1:-1]
                 if re.match('\\s*', payee) and re.match('.*>.*', narration):
-                    splt = narration.split('>',1)
-                    payee = splt[0]
-                    narration = splt[1]
-                narration = re.sub("\\s+", " ", narration).strip()
-                payee = re.sub("\\s+", " ", payee).strip()
-                payee_mpd = map_payee(payee_df, new_payees, payee, row)
+                    payee = narration.split('>',1)[0]
+                narration = re.sub("\\s+", " ", narration).replace(":"," ").strip()
+                payee = re.sub("\\s+", " ", payee).replace(":"," ").strip()
+                payee_mpd = self.map_payee(payee_df, new_payees, payee, row)
                 if payee_mpd == "\0":
                     index-=1
                     break
