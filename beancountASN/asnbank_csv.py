@@ -30,6 +30,7 @@ class ASNImporter(importer.ImporterProtocol):
                 'txn_comm', 'amount', 'book_date', 'comm_date', 'intern_code',
                 'global_code', 'id', 'reference', 'description', 'copy_id']
         self.payee_map_file = payee_map_file
+        self.skip_all = False
 
     def name(self):
         return "ASN Bank CSV Importer"
@@ -113,56 +114,61 @@ class ASNImporter(importer.ImporterProtocol):
             payee_df.append(new_payees_df, ignore_index=True).to_csv(self.payee_map_file)
         return entries
 
-def map_payee(payee_df, new_payees, payee:str, row) -> str:
-    """
-    Refactors the payee using the payees cache. Prompts for
-    a new name if payee is not found in the cache.
-    """
-    if row['contra_account']:
-        key = row['contra_account']
-    elif payee:
-        key = payee
-    else:
-        key = row['description']
-    # Check cache from payee_map_file
-    ret = payee_df.loc[payee_df.RAW == key, 'BC']
-    if not ret.empty:
-        return ret.iloc[0]
-    # Check cache with new_payees
-    if key in new_payees:
-        return new_payees[key]
-    # Not found. Prompt for new payee name
-    print("New payee in transaction\n"
-            "Date: {}\n"
-            "Payee: {}\n"
-            "Account: {}\n"
-            "Amount: {}{}\n"
-            "Narration: {}\n"
-            "Give a name for {}, = to preserve, q to exit, or s to skip."\
-                    .format(
-                        row['txn_date'],
-                        payee,
-                        row['contra_account'],
-                        row['txn_comm'],
-                        row['amount'],
-                        row['description'],
-                        key
-                        ),
-                    file=sys.stderr
-                    )
-    value = input()
-    # Return payee depending on returned value
-    if value == "s":
-        return payee
-    if value == "q":
-        return "\0"
-    if value == "=":
-        value = payee
-    if not key:
+    def map_payee(self, payee_df, new_payees, payee:str, row) -> str:
+        """
+        Refactors the payee using the payees cache. Prompts for
+        a new name if payee is not found in the cache.
+        """
+        if row['contra_account']:
+            key = row['contra_account']
+        elif payee:
+            key = payee
+        else:
+            key = row['description']
+        # Check cache from payee_map_file
+        ret = payee_df.loc[payee_df.RAW == key, 'BC']
+        if not ret.empty:
+            return ret.iloc[0]
+        # Check cache with new_payees
+        if key in new_payees:
+            return new_payees[key]
+        if self.skip_all:
+            return payee
+        # Not found. Prompt for new payee name
+        print("New payee in transaction\n"
+                "Date: {}\n"
+                "Payee: {}\n"
+                "Account: {}\n"
+                "Amount: {}{}\n"
+                "Narration: {}\n"
+                "Give a name for {}, = to preserve, q to exit, s to skip, S to "
+                "skip all."\
+                        .format(
+                            row['txn_date'],
+                            payee,
+                            row['contra_account'],
+                            row['txn_comm'],
+                            row['amount'],
+                            row['description'],
+                            key
+                            ),
+                        file=sys.stderr
+                        )
+        value = input()
+        # Return payee depending on returned value
+        if value == "S":
+            self.skip_all = True
+        if value in ("s", "S"):
+            return payee
+        if value == "q":
+            return "\0"
+        if value == "=":
+            value = payee
+        if not key:
+            return value
+        new_payees[key] = value
+        print("Adding {} -> {}".format(key, value), file=sys.stderr)
         return value
-    new_payees[key] = value
-    print("Adding {} -> {}".format(key, value), file=sys.stderr)
-    return value
 
 def add_post(txn, payee_df, payee, row) -> None:
     """
