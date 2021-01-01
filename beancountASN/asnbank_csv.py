@@ -36,7 +36,7 @@ class ASNImporter(importer.ImporterProtocol):
 
     def identify(self, file):
         filename = os.path.basename(file.name)
-        return re.match('\\d{10}_\\d{8}_\\d{6}\\.csv',
+        return re.match('\\d{10}_\\d{8}_\\d{6}.*\\.csv',
                 filename) and (filename[:10]==self.account_no[-10:])
 
     def file_name(self, file):
