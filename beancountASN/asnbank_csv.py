@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ Importer for CSV statements from ASN Bank (Volksbank N.V.)"""
 
-__copyright__ = "Copyright (C) 2020 Bram Hooimeijer"
+__copyright__ = "Copyright (C) 2020-2021 Bram Hooimeijer"
 __license__ = "GPLv2"
 
 import csv
