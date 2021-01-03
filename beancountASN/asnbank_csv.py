@@ -9,8 +9,7 @@ import os
 import re
 import string
 import sys
-from datetime import timedelta
-from dateutil.parser import parse
+from datetime import timedelta,datetime
 
 import pandas as pd
 
@@ -47,7 +46,7 @@ class ASNImporter(importer.ImporterProtocol):
         return self.account_root
 
     def file_date(self, file):
-        return parse(os.path.basename(file.name).split('_')[1], dayfirst=True).date()
+        return datetime.strptime(os.path.basename(file.name).split('_')[1], '%d%m%Y').date()
 
     def extract(self, file, existing_entries=None):
         try:
@@ -77,7 +76,7 @@ class ASNImporter(importer.ImporterProtocol):
 
                 txn = data.Transaction(
                         meta = data.new_metadata(file.name, index),
-                        date = parse(row['txn_date'], dayfirst=True).date(),
+                        date = datetime.strptime(row['txn_date'], '%d-%m-%Y').date(),
                         flag = flags.FLAG_OKAY,
                         payee = payee_mpd if payee_mpd else None,
                         narration = narration,
@@ -98,7 +97,7 @@ class ASNImporter(importer.ImporterProtocol):
             entries.append(
                     data.Balance(
                         data.new_metadata(file.name, index),
-                        parse(row['txn_date'], dayfirst=True).date() + timedelta(days=1),
+                        datetime.strptime(row['txn_date'], '%d-%m-%Y').date() + timedelta(days=1),
                         self.account_root,
                         amount.add(
                             entries[index].postings[0].units,
