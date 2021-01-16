@@ -140,13 +140,13 @@ class ASNImporter(importer.ImporterProtocol):
             return payee
         # Not found. Prompt for new payee name
         print("New payee in transaction\n"
-                f"Date: {row['txn_date']}\n"
-                f"Payee: {payee}\n"
-                f"Account: {row['contra_account']}\n"
-                f"Amount: {row['txn_comm']}{row['amount']}\n"
-                f"Narration: {row['description']}\n"
-                f"Give a name for {key}, = to preserve, q to exit, s to skip,"
-                " S to skip all.", file=sys.stderr)
+              f"Date: {row['txn_date']}\n"
+              f"Payee: {payee}\n"
+              f"Account: {row['contra_account']}\n"
+              f"Amount: {row['txn_comm']}{row['amount']}\n"
+              f"Narration: {row['description']}\n"
+              f"Give a name for {key}, = to preserve, q to exit, s to skip,"
+              " S to skip all.", file=sys.stderr)
         value = input()
         # Return payee depending on returned value
         if value == "S":
@@ -157,10 +157,9 @@ class ASNImporter(importer.ImporterProtocol):
             return "\0"
         if value == "=":
             value = payee
-        if not key:
-            return value
-        new_payees[key] = value
-        print(f"Adding {key} -> {value}", file=sys.stderr)
+        if key:
+            new_payees[key] = value
+            print(f"Adding {key} -> {value}", file=sys.stderr)
         return value
 
 
