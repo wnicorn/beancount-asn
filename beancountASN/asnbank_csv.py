@@ -71,7 +71,7 @@ class ASNImporter(importer.ImporterProtocol):
                 narrate = row['description']
                 if re.match(r"^'.*'$", narrate):
                     narrate = narrate[1:-1]
-                if re.match(r"\\s*", payee) and re.match(r".*>.*", narrate):
+                if re.match(r"\s*", payee) and re.match(r".*>.*", narrate):
                     payee = narrate.split('>', 1)[0]
                 narrate = re.sub(r"\s+|:", " ", narrate).strip()
                 payee = re.sub(r"\s+|:", " ", payee).strip()
